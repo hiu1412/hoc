@@ -21,12 +21,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['username'] = $username;
         $_SESSION['success'] = "Dang nhap thanh cong!";
 
-        //cap nhat gio hang tu session_id sang user_id
-        $session_id = session_id();/*
-        $query = "UPDATE basket SET user_id = ?, session_id = NULL WHERE session_id =?";
-        $stmt = mysqli_prepare($conn,$query);
-        mysqli_stmt_bind_param($stmt, "is", $id, $session_id);
-        mysqli_stmt_execute($stmt);*/
+        // Cập nhật giỏ hàng từ session_id sang user_id
+        $session_id = session_id();
+        $query_update = "UPDATE basket SET user_id = ? WHERE session_id = ?";
+        $stmt_update = mysqli_prepare($conn, $query_update);
+
+        if ($stmt_update) {
+            mysqli_stmt_bind_param($stmt_update, "is", $id, $session_id);
+            if (!mysqli_stmt_execute($stmt_update)) {
+                $_SESSION['error'] = "Lỗi khi cập nhật giỏ hàng: " . mysqli_stmt_error($stmt_update);
+            }
+            mysqli_stmt_close($stmt_update);
+        } else {
+            $_SESSION['error'] = "Lỗi khi chuẩn bị truy vấn cập nhật giỏ hàng: " . mysqli_error($conn);
+        }
+
+        // Sau khi cập nhật user_id, xóa session_id để tránh trùng lặp
+        $query_clear_session = "UPDATE basket SET session_id = NULL WHERE user_id = ?";
+        $stmt_clear = mysqli_prepare($conn, $query_clear_session);
+
+        if ($stmt_clear) {
+            mysqli_stmt_bind_param($stmt_clear, "i", $id);
+            mysqli_stmt_execute($stmt_clear);
+            mysqli_stmt_close($stmt_clear);
+        }
 
         header("Location: index.php");
         exit();

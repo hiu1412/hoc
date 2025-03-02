@@ -28,13 +28,14 @@ if ($user_id) {
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 while ($row = mysqli_fetch_assoc($result)) {
+    $row['image_url'] = '../' . $row['image_url'];
     $basket_items[] = $row;
     $total_price += $row['price'] * $row['quantity'];
 }
 ?>
-<?php require_once '../templates/header.php'; ?>
+<<?php require_once '../templates/header.php'; ?>
 
-<div class="container mx-auto mt-6">
+    <div class="container mx-auto mt-6">
     <h2 class="text-2xl font-bold text-center">Giỏ Hàng</h2>
 
     <?php if (!empty($basket_items)) : ?>
@@ -59,11 +60,16 @@ while ($row = mysqli_fetch_assoc($result)) {
                         <td class="border p-2"><?= htmlspecialchars($item['make'] . ' ' . $item['model']) ?></td>
                         <td class="border p-2"><?= number_format($item['price']) ?> VND</td>
                         <td class="border p-2">
-                            <form action="update_quantity.php" method="POST" class="flex items-center space-x-2">
+                            <form action="update_quantity.php" method="POST" style="display: inline-block;">
                                 <input type="hidden" name="car_id" value="<?= $item['car_id'] ?>">
-                                <button type="submit" name="action" value="decrease" class="bg-gray-300 px-2 py-1 rounded">-</button>
-                                <input type="number" name="quantity" value="<?= $item['quantity'] ?>" min="1" class="w-12 text-center border">
-                                <button type="submit" name="action" value="increase" class="bg-gray-300 px-2 py-1 rounded">+</button>
+                                <input type="hidden" name="action" value="decrease">
+                                <button type="submit" class="bg-gray-300 px-2 py-1 rounded">-</button>
+                            </form>
+                            <input type="number" name="quantity" value="<?= $item['quantity'] ?>" min="1" class="w-12 text-center border" style="display: inline-block;">
+                            <form action="update_quantity.php" method="POST" style="display: inline-block;">
+                                <input type="hidden" name="car_id" value="<?= $item['car_id'] ?>">
+                                <input type="hidden" name="action" value="increase">
+                                <button type="submit" class="bg-gray-300 px-2 py-1 rounded">+</button>
                             </form>
                         </td>
                         <td class="border p-2"><?= number_format($item['price'] * $item['quantity']) ?> VND</td>
@@ -78,11 +84,26 @@ while ($row = mysqli_fetch_assoc($result)) {
             </tbody>
         </table>
 
+        <!-- Hiển thị tổng tiền -->
         <div class="text-right mt-4">
             <h3 class="text-xl font-bold">Tổng cộng: <?= number_format($total_price) ?> VND</h3>
         </div>
+
+        <!-- Nút Thanh Toán -->
+
+        <?php if ($user_id): ?>
+            <div class="text-center mt-6">
+                <form action="checkout.php" method="POST">
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded text-lg">
+                        Thanh Toán
+                    </button>
+                </form>
+            </div>
+        <?php endif; ?>
+
     <?php else : ?>
         <p class="text-center mt-4 text-gray-500">Giỏ hàng trống</p>
     <?php endif; ?>
-</div>
-<?php require_once '../templates/footer.php'; ?>
+    </div>
+
+    <?php require_once '../templates/footer.php'; ?>

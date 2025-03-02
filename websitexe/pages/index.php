@@ -3,7 +3,7 @@ require_once '../config/config.php';
 require_once '../templates/header.php';
 require_once '../templates/navbar.php';
 
-$query = "SELECT id,make,model, price, image_url FROM cars LIMIT 4";
+$query = "SELECT id,make,model, price, image_url FROM cars WHERE active = 1 ";
 $result = mysqli_query($conn, $query);
 ?>
 
